@@ -3,6 +3,7 @@
 
 # Custom
 ClientApp/.angular/
+Migrations/
 
 # User-specific files
 *.suo

@@ -1,12 +1,23 @@
+using elastic_search_app.Entities;
+using elastic_search_app.Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+var connString = configuration.GetSection("ConnectionStrings")["SqlConnection"];
+//DbContext
+builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(connString));
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<BookService>();
 
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+
+
 
 var app = builder.Build();
 
