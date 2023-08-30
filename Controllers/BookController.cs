@@ -38,18 +38,13 @@ namespace elastic_search_app.Controllers
 
             return Ok(createdId);
         }
-        //[HttpPost]
-        //[Route("generate/{amount}")]
-        //public async Task<IActionResult> Generate([FromBody] Book book, int amount)
-        //{
-        //    var createdId = await _bookService.Generate(book,amount);
+        [HttpPost]
+        [Route("generate/{amount}")]
+        public async Task<IActionResult> Generate(int amount)
+        {
+            await _bookService.GenerateAsync(amount);
 
-        //    if (createdId==null)
-        //    {
-        //        _logger.LogError($"Book was not created");
-        //    }
-
-        //    return Ok(createdId);
-        //}
+            return Ok();
+        }
     }
 }

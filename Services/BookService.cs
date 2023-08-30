@@ -7,11 +7,13 @@ namespace elastic_search_app.Services
     {
         private readonly ILogger<BookService> _logger;
         private readonly AppDbContext _context;
+        private readonly DataGeneratorService _generator;
 
-        public BookService(ILogger<BookService> logger, AppDbContext context)
+        public BookService(ILogger<BookService> logger, AppDbContext context, DataGeneratorService generator)
         {
             _logger=logger;
             _context=context;
+            _generator=generator;
         }
         public async Task<Book?> GetByIdAsync(int id)
         {
@@ -25,6 +27,22 @@ namespace elastic_search_app.Services
 
             _logger.LogInformation($"Book(id={id}) successfully found in DB");
             return book;
+        }
+
+        public async Task GenerateAsync(int amount)
+        {
+            var generatedList = _generator.GenerateBooks(amount);
+
+            if (generatedList==null)
+            {
+                _logger.LogInformation($"Generated list is not valid");
+                throw new ArgumentNullException("Generated list is not valid");
+            }
+
+            await _context.Books.AddRangeAsync(generatedList);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Created books with IDs {generatedList.First().Id}-{generatedList.Last().Id}");
         }
 
         public async Task<int?> CreateAsync(Book book)

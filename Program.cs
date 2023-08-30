@@ -14,6 +14,7 @@ builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(connSt
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<BookService>();
+builder.Services.AddScoped<DataGeneratorService>();
 
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 
