@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
-    .AddJsonFile("appsecrets.json")
+    .AddJsonFile("Settings/appsecrets.json")
     .Build();
 builder.Services.Configure<ElasticConfig>(configuration.GetSection("Elasticsearch"));
 //DbContext
