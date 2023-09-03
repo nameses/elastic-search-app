@@ -1,5 +1,7 @@
 using elastic_search_app.Entities;
 using elastic_search_app.Services;
+using elastic_search_app.Settings.Configuration;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -7,18 +9,30 @@ var builder = WebApplication.CreateBuilder(args);
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsecrets.json")
     .Build();
-var connString = configuration.GetSection("ConnectionStrings")["SqlConnection"];
+builder.Services.Configure<ElasticConfig>(configuration.GetSection("Elasticsearch"));
 //DbContext
+var connString = configuration.GetConnectionString("SqlConnection");
 builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(connString));
+//hangfire
+builder.Services.AddHangfire(c => c
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<BookService>();
+
+//services
 builder.Services.AddScoped<DataGeneratorService>();
-
-builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
-
-
+builder.Services.AddScoped<BookService>();
+builder.Services.AddScoped<SyncService>();
+//log, serilog
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration)
+);
 
 var app = builder.Build();
 
@@ -31,13 +45,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseHangfireDashboard();
+
 app.UseSerilogRequestLogging();
 app.UseRouting();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}");
-
+app.MapHangfireDashboard();
 app.MapFallbackToFile("index.html");
+
+//hangfire reccurent tasks
+var manager = new RecurringJobManager();
+manager.AddOrUpdate<SyncService>("sync-mssql-and-elasticsearch", x => x.SyncData(), Cron.Minutely());
 
 app.Run();
