@@ -8,12 +8,17 @@ namespace elastic_search_app.Services
         private readonly ILogger<BookService> _logger;
         private readonly AppDbContext _context;
         private readonly DataGeneratorService _generator;
+        private readonly SyncService _syncService;
 
-        public BookService(ILogger<BookService> logger, AppDbContext context, DataGeneratorService generator)
+        public BookService(ILogger<BookService> logger,
+            AppDbContext context,
+            DataGeneratorService generator,
+            SyncService syncService)
         {
             _logger=logger;
             _context=context;
             _generator=generator;
+            _syncService=syncService;
         }
         public async Task<Book?> GetByIdAsync(int id)
         {
@@ -53,7 +58,9 @@ namespace elastic_search_app.Services
                 throw new ArgumentNullException("Book for creation is not valid");
             }
 
-            book.Created = DateTime.Now;
+            book.LastModified = DateTime.Now;
+            book.IfSynced = false;
+            book.LastOperation = Operation.Create;
 
             await _context.Books.AddAsync(book);
             await _context.SaveChangesAsync();
@@ -63,19 +70,47 @@ namespace elastic_search_app.Services
             return book.Id;
         }
 
-        //public async Task UpdateAsync(int id, Book book) { }
-
-        public async Task DeleteAsync(int id)
+        public async Task UpdateAsync(int id, Book book)
         {
-            var book = await _context.Books.FindAsync(id);
+            var data = await _context.Books.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (data != null)
+            {
+                data.Title = book.Title;
+                data.Author = book.Author;
+                data.Annotation = book.Annotation;
+                data.Country = book.Country;
+                data.Genre = book.Genre;
+                data.PublishYear = book.PublishYear;
+
+                data.LastModified = DateTime.Now;
+                data.IfSynced = false;
+                data.LastOperation = Operation.Update;
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation($"Successfully updated book with id={id}");
+            }
+            else
+            {
+                _logger.LogWarning($"Could not find book with id={id} in update method");
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var book = await _context.Books.FirstOrDefaultAsync(x => x.Id == id);
 
             if (book==null)
             {
-                _logger.LogInformation($"Book(id={id}) not found in DB");
-                return;
+                _logger.LogWarning($"Book(id={id}) not found in DB");
+                return false;
             }
 
+            SyncService.AddToElasticDeleteQueue(book);
             _context.Books.Remove(book);
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
