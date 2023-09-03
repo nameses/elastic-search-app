@@ -45,7 +45,9 @@ namespace elastic_search_app.Services
                 .RuleFor(e => e.Country, f => f.Address.Country())
                 .RuleFor(e => e.Genre, f => f.PickRandom(genreList))
                 .RuleFor(e => e.PublishYear, f => f.Random.Int(1900, DateTime.Now.Year))
-                .RuleFor(e => e.Created, _ => DateTime.Now);
+                .RuleFor(e => e.LastModified, _ => DateTime.Now)
+                .RuleFor(e => e.IfSynced, _ => false)
+                .RuleFor(e => e.LastOperation, _ => Operation.Create);
         }
     }
 }
