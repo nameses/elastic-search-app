@@ -46,5 +46,29 @@ namespace elastic_search_app.Controllers
 
             return Ok();
         }
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Book book)
+        {
+            if (id != book.Id)
+            {
+                return BadRequest("Id mismatch between route parameter and request body.");
+            }
+
+            await _bookService.UpdateAsync(id, book);
+
+            return NoContent(); // 204 No Content indicates a successful update with no response body
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var res = await _bookService.DeleteAsync(id);
+
+            if (!res) return NotFound();
+
+            return Ok();
+        }
     }
 }
