@@ -2,6 +2,7 @@
 using Elastic.Transport;
 using elastic_search_app.DTO;
 using elastic_search_app.Entities;
+using elastic_search_app.Helper;
 using elastic_search_app.Settings.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -29,16 +30,18 @@ namespace elastic_search_app.Services
         }
 
 
-        public async Task<IEnumerable<BookDTO>> SearchByQueryAsync(string query)
+        public async Task<PagedList<BookDTO>> SearchByQueryAsync(string query, int page, int pageSize)
         {
-            var fuzzinessConst = 2;//possible: 0,1,2
+            var fuzzinessConst = 2;//possible: 0, 1, 2
             if (query.Count()<5) fuzzinessConst = 1;
             else if (query.Count()<2) fuzzinessConst = 0;
+
             var books = new List<BookDTO>();
 
             var response = await _client.SearchAsync<BookDTO>(s => s
                 .Index(bookIndexName)
-                .From(0)
+                .From((page-1)*pageSize)
+                .Size(pageSize)
                 .Query(q => q
                     //.Match(m => m
                     //    .Field(f => f.Title)
@@ -49,11 +52,13 @@ namespace elastic_search_app.Services
                         .Fuzziness(new Fuzziness(fuzzinessConst)) // maximum edit distance
                     )
                 )
-                .Size(20)
             );
 
+
             if (response.IsSuccess())
+            {
                 books.AddRange(response.Documents.ToList());
+            }
 
             if (books==null)
             {
@@ -62,7 +67,7 @@ namespace elastic_search_app.Services
             }
 
             _logger.LogInformation($"Books(query={query}) successfully found in Elasticsearch");
-            return books;
+            return new PagedList<BookDTO>(books, page, pageSize, response.HitsMetadata.Total!.Value);
         }
     }
 }

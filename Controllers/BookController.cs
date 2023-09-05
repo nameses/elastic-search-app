@@ -21,13 +21,16 @@ namespace elastic_search_app.Controllers
 
         [HttpGet]
         [Route("search")]
-        public async Task<IActionResult> SearchByQuery(string query)
+        public async Task<IActionResult> SearchByQuery(string query, int page, int pageSize)
         {
-            var user = await _searchService.SearchByQueryAsync(query);
+            if (page<1) return BadRequest("Wrong page number");
+            if (pageSize<=0) return BadRequest("Wrong pageSize number");
 
-            if (user==null) return NotFound();
+            var books = await _searchService.SearchByQueryAsync(query, page, pageSize);
 
-            return Ok(user);
+            if (books==null) return NotFound();
+
+            return Ok(books);
         }
 
         [HttpGet]
