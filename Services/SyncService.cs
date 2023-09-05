@@ -10,25 +10,26 @@ namespace elastic_search_app.Services
 {
     public class SyncService
     {
-        private readonly IOptions<ElasticConfig> _config;
         private readonly AppDbContext _context;
         private readonly ILogger<SyncService> _logger;
-        //default url = localhost:9200
-        private readonly ElasticsearchClient client;
+        private readonly IOptions<ElasticConfig> _config;
+
+        private readonly ElasticsearchClient _client;
         private readonly string bookIndexName = "book_index";
 
         public static List<int?> bookIdsToDelete = new();
 
-        public SyncService(IOptions<ElasticConfig> config, AppDbContext context, ILogger<SyncService> logger)
+        public SyncService(AppDbContext context, ILogger<SyncService> logger, IOptions<ElasticConfig> config)
         {
-            _config=config;
             _context=context;
             _logger=logger;
+            _config=config;
+
 
             var settings = new ElasticsearchClientSettings(_config.Value.CloudId!,
                 new BasicAuthentication(_config.Value.User!, _config.Value.Password!));
 
-            client = new ElasticsearchClient(settings);
+            _client = new ElasticsearchClient(settings);
         }
 
         public static void AddToElasticDeleteQueue(Book book)
@@ -64,7 +65,7 @@ namespace elastic_search_app.Services
                 //logic for create
                 if (row.LastOperation==Operation.Create)
                 {
-                    var indexResponse = await client.IndexAsync(document, bookIndexName);
+                    var indexResponse = await _client.IndexAsync(document, bookIndexName);
 
                     if (indexResponse.IsValidResponse)
                     {
@@ -98,7 +99,7 @@ namespace elastic_search_app.Services
                             )
                         );
 
-                    var response = await client.UpdateByQueryAsync<BookDTO>(updateDescriptor);
+                    var response = await _client.UpdateByQueryAsync<BookDTO>(updateDescriptor);
 
                     if (response.IsValidResponse)
                     {
@@ -127,7 +128,7 @@ namespace elastic_search_app.Services
             var isValidResponse = true;
             foreach (var id in bookIdsToDelete)
             {
-                var result = await client.DeleteByQueryAsync<BookDTO>(bookIndexName,
+                var result = await _client.DeleteByQueryAsync<BookDTO>(bookIndexName,
                     d => d.Query(q => q
                             .Match(m => m
                                 .Field(p => p.Id)

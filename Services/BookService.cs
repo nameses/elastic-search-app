@@ -20,7 +20,8 @@ namespace elastic_search_app.Services
             _generator=generator;
             _syncService=syncService;
         }
-        public async Task<Book?> GetByIdAsync(int id)
+
+        public async Task<Book?> GetAsync(int id)
         {
             var book = await _context.Books.FirstOrDefaultAsync(x => x.Id == id);
 
