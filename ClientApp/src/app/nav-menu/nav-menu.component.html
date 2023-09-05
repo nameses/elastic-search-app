@@ -2,32 +2,15 @@
   <nav
     class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
   >
-    <div class="container">
+    <div class="container flex flex-row justify-between">
       <a class="navbar-brand" [routerLink]="['/']">elastic_search_app</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target=".navbar-collapse"
-        aria-label="Toggle navigation"
-        [attr.aria-expanded]="isExpanded"
-        (click)="toggle()"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div
-        class="navbar-collapse collapse d-sm-inline-flex justify-content-end"
-        [ngClass]="{ show: isExpanded }"
-      >
-        <ul class="navbar-nav flex-grow">
-          <li
-            class="nav-item"
-            [routerLinkActive]="['link-active']"
-            [routerLinkActiveOptions]="{ exact: true }"
-          >
-            <a class="nav-link text-dark" [routerLink]="['/']">Home</a>
-          </li>
-        </ul>
+      <div class="flex flex-row">
+        <div class="">
+          <a class="nav-link text-black" [routerLink]="['/']">Home</a>
+        </div>
+        <div class="ml-3">
+          <a class="nav-link text-black" [routerLink]="['/search']">Search</a>
+        </div>
       </div>
     </div>
   </nav>

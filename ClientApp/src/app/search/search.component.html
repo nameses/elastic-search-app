@@ -1,0 +1,25 @@
+<h1 class="flex justify-center text-xl mb-3">Elasticsearch search engine</h1>
+
+<div class="flex items-center justify-center">
+  <div class="flex border-2 border-gray-200 rounded">
+    <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
+      <input
+        formControlName="query"
+        type="text"
+        class="px-4 py-2 w-80"
+        placeholder="Search..."
+      />
+      <button class="px-4 text-white bg-gray-600 border-l" type="submit">
+        Search
+      </button>
+    </form>
+  </div>
+</div>
+<div class="found-item h-auto my-4" *ngFor="let item of this.dataList">
+  <span>{{ item.title }}</span>
+  <span>{{ item.author }}</span>
+  <span>{{ item.annotation }}</span>
+  <span>{{ item.country }}</span>
+  <span>{{ item.genre }}</span>
+  <span>{{ item.publishYear }}</span>
+</div>

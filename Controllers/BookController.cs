@@ -5,26 +5,40 @@ using Microsoft.AspNetCore.Mvc;
 namespace elastic_search_app.Controllers
 {
     [ApiController]
-    [Route("api/user")]
+    [Route("api/book")]
     public class BookController : Controller
     {
         private readonly ILogger<BookController> _logger;
         private readonly BookService _bookService;
+        private readonly SearchService _searchService;
 
-        public BookController(ILogger<BookController> logger, BookService bookService)
+        public BookController(ILogger<BookController> logger, BookService bookService, SearchService searchService)
         {
             _logger=logger;
             _bookService=bookService;
+            _searchService=searchService;
         }
+
         [HttpGet]
-        [Route("{id}")]
-        public async Task<IActionResult> GetBookById(int id)
+        [Route("search")]
+        public async Task<IActionResult> SearchByQuery(string query)
         {
-            var user = await _bookService.GetByIdAsync(id);
+            var user = await _searchService.SearchByQueryAsync(query);
 
             if (user==null) return NotFound();
 
             return Ok(user);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<IActionResult> GetBookById(int id)
+        {
+            var book = await _bookService.GetAsync(id);
+
+            if (book==null) return NotFound();
+
+            return Ok(book);
         }
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Book book)
@@ -57,7 +71,7 @@ namespace elastic_search_app.Controllers
 
             await _bookService.UpdateAsync(id, book);
 
-            return NoContent(); // 204 No Content indicates a successful update with no response body
+            return NoContent();
         }
 
         [HttpDelete]
