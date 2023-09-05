@@ -15,6 +15,6 @@
         public int PageSize { get; set; }
         public long TotalCount { get; set; }
         public bool HasNextPage => Page * PageSize < TotalCount;
-        public bool HasPreviousPage => PageSize > 1;
+        public bool HasPreviousPage => Page > 1;
     }
 }
