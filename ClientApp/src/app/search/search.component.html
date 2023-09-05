@@ -9,17 +9,53 @@
         class="px-4 py-2 w-80"
         placeholder="Search..."
       />
-      <button class="px-4 text-white bg-gray-600 border-l" type="submit">
+      <button
+        class="btn px-4 py-2 text-white bg-gray-600 hover:bg-gray-500 border-l"
+        type="submit"
+      >
         Search
       </button>
     </form>
   </div>
 </div>
-<div class="found-item h-auto my-4" *ngFor="let item of this.dataList">
-  <span>{{ item.title }}</span>
-  <span>{{ item.author }}</span>
-  <span>{{ item.annotation }}</span>
-  <span>{{ item.country }}</span>
-  <span>{{ item.genre }}</span>
-  <span>{{ item.publishYear }}</span>
+
+<!-- <span>{{ this.dataList?.page }}</span>
+<hr />
+<span>{{ this.dataList?.pageSize }}</span>
+<hr />
+<span>{{ this.dataList?.totalCount }}</span> -->
+<div class="flex flex-wrap -mx-2">
+  <div
+    class="w-72 bg-white rounded-lg shadow-md p-4 m-2"
+    *ngFor="let item of this.dataList?.items"
+  >
+    <h4 class="text-lg font-semibold mb-2">{{ item.title }}</h4>
+    <p class="text-gray-600 text-sm mb-2">{{ item.author }}</p>
+    <p class="text-gray-600 text-sm">{{ item.genre }}</p>
+    <p class="text-sm text-gray-500 mt-2">Published: {{ item.publishYear }}</p>
+  </div>
+</div>
+<div class="mt-2 mb-12 flex flex-row justify-between">
+  <button
+    class="btn bg-gray-600 hover:bg-gray-500 text-white"
+    (click)="this.previousPage()"
+    [disabled]="!this.dataList?.hasPreviousPage"
+  >
+    previous
+  </button>
+  <div
+    *ngIf="
+      this.dataList?.totalPageCount != undefined &&
+      this.dataList?.totalPageCount! > 1
+    "
+  >
+    {{ this.dataList?.page }}/{{ this.dataList?.totalPageCount }}
+  </div>
+  <button
+    class="btn bg-gray-600 hover:bg-gray-500 text-white"
+    (click)="this.nextPage()"
+    [disabled]="!this.dataList?.hasNextPage"
+  >
+    next
+  </button>
 </div>

@@ -2,8 +2,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Book } from 'src/models/Book';
-import { SearchPageService } from '../services/search-page.service';
-import { Subject } from 'rxjs';
+import { SearchService } from '../services/search.service';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { PagedList } from 'src/models/pagedList';
 
 @Component({
   selector: 'app-search',
@@ -13,41 +14,64 @@ import { Subject } from 'rxjs';
 export class SearchComponent {
   constructor(
     private formBuilder: FormBuilder,
-    private http: HttpClient,
-    public searchService: SearchPageService,
-    private cdRef: ChangeDetectorRef
-  ) {
-    // this.dataList.next([]);
-  }
 
-  public dataList: Book[] = [];
-  // dataList: Subject<Book[]> = new Subject<Book[]>();
+    public searchService: SearchService,
+    private cdRef: ChangeDetectorRef
+  ) {}
+  public dataList: PagedList<Book> | undefined;
+  private pageSize: number = 12;
+  currentPage$ = new BehaviorSubject<number>(1);
 
   searchForm: FormGroup = this.formBuilder.group({
     query: '',
   });
 
   onSubmit(): void {
-    // if (this.searchForm.get('query')?.value) {
-    //   console.log('Query is empty');
-    //   return;
-    // }
+    if (this.searchForm.get('query')?.value.trim() == '') {
+      console.warn('Empty query');
+      return;
+    }
+    if (this.searchForm.get('query')?.value.trim().Count < 4) {
+      console.warn('Too small query');
+      return;
+    }
+    this.currentPage$.next(1);
+    this.renewData();
+  }
 
-    const apiUrl = 'https://localhost:7037/api/book/search';
-    const params = new HttpParams().set(
-      'query',
-      this.searchForm.get('query')?.value
-    );
+  public nextPage(): void {
+    if (!this.dataList?.hasNextPage) {
+      console.warn('No next page');
+      return;
+    }
+    this.currentPage$.next(this.currentPage$.value + 1);
+    this.renewData();
+  }
 
-    console.log('Your search query has been submitted');
+  public previousPage(): void {
+    if (!this.dataList?.hasPreviousPage) {
+      console.warn('No previous page');
+      return;
+    }
+    this.currentPage$.next(this.currentPage$.value - 1);
+    this.renewData();
+  }
 
-    this.http.get<Book[]>(apiUrl, { params }).subscribe((response) => {
-      this.dataList = response;
-      // this.dataList.next(response);
-      console.log('1: ', this.dataList);
-      console.log('2: ', response);
+  renewData(): void {
+    this.searchService
+      .search(
+        this.searchForm.get('query')?.value.trim(),
+        this.currentPage$.value,
+        this.pageSize
+      )
+      .subscribe((response) => {
+        this.dataList = response;
+        this.dataList.totalPageCount = Math.ceil(
+          response.totalCount / response.pageSize
+        );
+        console.log(this.dataList);
 
-      this.cdRef.detectChanges();
-    });
+        this.cdRef.detectChanges();
+      });
   }
 }
