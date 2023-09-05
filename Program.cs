@@ -29,10 +29,22 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<DataGeneratorService>();
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<SyncService>();
+builder.Services.AddScoped<SearchService>();
+
 //log, serilog
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration)
 );
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "_myAllowSpecificOrigins",
+                      policy =>
+                      {
+                          policy.AllowAnyOrigin().AllowAnyMethod();
+                      });
+});
 
 var app = builder.Build();
 
@@ -50,6 +62,8 @@ app.UseHangfireDashboard();
 
 app.UseSerilogRequestLogging();
 app.UseRouting();
+
+app.UseCors("_myAllowSpecificOrigins");
 
 app.MapControllerRoute(
     name: "default",
