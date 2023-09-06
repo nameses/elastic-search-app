@@ -3,8 +3,8 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Book } from 'src/models/Book';
 import { SearchService } from '../services/search.service';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { PagedList } from 'src/models/pagedList';
+import { BehaviorSubject, Subject, catchError, of, timeout } from 'rxjs';
+import { PagedList } from 'src/types/pagedList';
 
 @Component({
   selector: 'app-search',
@@ -12,12 +12,6 @@ import { PagedList } from 'src/models/pagedList';
   styleUrls: [],
 })
 export class SearchComponent {
-  constructor(
-    private formBuilder: FormBuilder,
-
-    public searchService: SearchService,
-    private cdRef: ChangeDetectorRef
-  ) {}
   public dataList: PagedList<Book> | undefined;
   private pageSize: number = 12;
   currentPage$ = new BehaviorSubject<number>(1);
@@ -26,12 +20,18 @@ export class SearchComponent {
     query: '',
   });
 
+  constructor(
+    private formBuilder: FormBuilder,
+    public searchService: SearchService,
+    private cdRef: ChangeDetectorRef
+  ) {}
+
   onSubmit(): void {
     if (this.searchForm.get('query')?.value.trim() == '') {
       console.warn('Empty query');
       return;
     }
-    if (this.searchForm.get('query')?.value.trim().Count < 4) {
+    if (this.searchForm.get('query')?.value.trim().length < 4) {
       console.warn('Too small query');
       return;
     }
@@ -44,6 +44,7 @@ export class SearchComponent {
       console.warn('No next page');
       return;
     }
+    if (this.dataList?.page == this.dataList?.totalPageCount) return;
     this.currentPage$.next(this.currentPage$.value + 1);
     this.renewData();
   }
@@ -66,7 +67,7 @@ export class SearchComponent {
       )
       .subscribe((response) => {
         this.dataList = response;
-        this.dataList.totalPageCount = Math.ceil(
+        this.dataList!.totalPageCount = Math.ceil(
           response.totalCount / response.pageSize
         );
         console.log(this.dataList);

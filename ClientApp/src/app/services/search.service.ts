@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment as env } from 'src/environments/environment';
 import { Book } from 'src/models/Book';
-import { PagedList } from 'src/models/pagedList';
+import { PagedList } from 'src/types/pagedList';
 
 @Injectable({
   providedIn: 'root',
