@@ -19,12 +19,19 @@ export class SearchComponent {
   searchForm: FormGroup = this.formBuilder.group({
     query: '',
   });
-
+  visualStyleForm: FormGroup = this.formBuilder.group({
+    amount: 12,
+  });
   constructor(
     private formBuilder: FormBuilder,
     public searchService: SearchService,
     private cdRef: ChangeDetectorRef
   ) {}
+
+  onPageSizeChange(): void {
+    this.pageSize = this.visualStyleForm.get('amount')?.value;
+    this.renewData();
+  }
 
   onSubmit(): void {
     if (this.searchForm.get('query')?.value.trim() == '') {
