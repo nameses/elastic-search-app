@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { HomeComponent } from './home/home.component';
 import { SearchComponent } from './search/search.component';
+import { GenerateComponent } from './generate/generate.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { SearchComponent } from './search/search.component';
     NavMenuComponent,
     HomeComponent,
     SearchComponent,
+    GenerateComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -24,6 +26,7 @@ import { SearchComponent } from './search/search.component';
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'search', component: SearchComponent },
+      { path: 'generate', component: GenerateComponent },
     ]),
   ],
   providers: [],

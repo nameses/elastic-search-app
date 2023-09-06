@@ -1,0 +1,27 @@
+<div class="flex items-center justify-center">
+  <div class="flex border-2 border-gray-200 rounded">
+    <form [formGroup]="generateForm" (ngSubmit)="onSubmit()">
+      <input
+        formControlName="amount"
+        type="number"
+        class="px-4 w-80"
+        placeholder="Enter amount to generate"
+        required
+      />
+      <button
+        class="btn text-white bg-gray-600 hover:bg-gray-500 border-l disabled:bg-gray-400"
+        type="submit"
+        [disabled]="dataLoadingState.type === 'loading'"
+      >
+        Generate
+      </button>
+    </form>
+  </div>
+</div>
+<div>
+  <h2 *ngIf="dataLoadingState.type === 'loading'">Loading...</h2>
+  <h2 *ngIf="this.dataLoadingState.type == 'loaded'">Data generated!</h2>
+  <h2 *ngIf="this.dataLoadingState.type == 'loadedNotSuccessful'">
+    Data generation was unsuccessful!
+  </h2>
+</div>
